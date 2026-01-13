@@ -16,22 +16,24 @@
     <script src="https://meet.jit.si/external_api.js"></script>
 </head>
 
-<body class="bg-slate-950 text-gray-100 font-inter">
-    <div class="min-h-screen flex">
-        {{-- LEFTBAR --}}
-        @include('includes.aside')
+<body class="bg-slate-950 text-zinc-200">
+    <div class="flex h-screen overflow-hidden">
+
+        {{-- SIDEBAR --}}
+        <aside class="w-72 bg-slate-900 border-r border-slate-800 sticky top-0 h-screen overflow-y-auto">
+            @include('includes.aside')
+        </aside>
+
         {{-- MAIN --}}
-        <div class="flex-1 flex flex-col">
-            {{-- HEADER --}}
+        <main class="flex-1 overflow-y-auto">
             @include('includes.header')
-            {{-- CONTENT --}}
-            <main class="flex-1 p-6">
+
+            <div class="max-w-7xl mx-auto px-8 py-10">
                 @yield('content')
-            </main>
+            </div>
+        </main>
 
-        </div>
     </div>
-
 </body>
 
 </html>
