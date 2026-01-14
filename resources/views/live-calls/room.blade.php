@@ -12,11 +12,11 @@
                 </p>
             </div>
             {{-- Временно --}}
-            <pre class="text-white">
+            {{-- <pre class="text-white">
                 started_at: {{ $call->started_at }}
                 minutes: {{ $call->minutes_purchased }}
                 seconds: {{ $call->seconds_left }}
-            </pre>
+            </pre> --}}
             {{-- Конец Временно --}}
             <div class="flex items-center gap-4">
                 <div id="timer" class="text-red-400 font-mono"></div>
@@ -29,7 +29,9 @@
             </div>
         </div>
         {{-- Video --}}
-        <div id="jitsi" class="flex-1 bg-black"></div>
+        <div class="mt-6 w-full h-[75vh] bg-black rounded-xl overflow-hidden relative">
+            <div id="jitsi-container" class="w-full h-full"></div>
+        </div>
     </div>
     <script>
         console.log("Jitsi API:", window.JitsiMeetExternalAPI);
@@ -43,33 +45,24 @@
             paid: 120
         };
         const end = new Date("{{ $call->ended_at }}").getTime();
-        // let seconds = LIMIT_MINUTES["{{ $call->status }}"] * 60;
         let seconds = {{ $call->seconds_left }};
-
         seconds = Number(seconds);
         if (isNaN(seconds) || seconds < 0) seconds = 0;
-        // let seconds = {{ $call->minutes_purchased }} * 60;
-
-        // let seconds = Number({{ (int) $call->seconds_left }});
         const timerEl = document.getElementById("timer");
 
         function renderTimer() {
             if (seconds < 0) seconds = 0;
-
             const m = Math.floor(seconds / 60);
             const s = String(seconds % 60).padStart(2, "0");
-
             timerEl.innerText = `Time left: ${m}:${s}`;
         }
         renderTimer();
         const interval = setInterval(() => {
             seconds--;
-
             if (seconds <= 0) {
                 clearInterval(interval);
                 timerEl.innerText = "Session ended";
                 api.executeCommand("hangup");
-
                 fetch("/live/room/{{ $call->id }}/end", {
                     method: "POST",
                     headers: {
@@ -77,21 +70,54 @@
                         "Accept": "application/json"
                     }
                 });
-
                 setTimeout(() => window.location = "/live-calls", 1500);
                 return;
             }
-
             renderTimer();
         }, 1000);
         // Start Jitsi
-        const api = new JitsiMeetExternalAPI("meet.jit.si", {
-            roomName: "{{ $call->jitsi_room }}",
-            parentNode: document.querySelector("#jitsi"),
+        const domain = "meet.jit.si";
+
+        const options = {
+            roomName: "{{ $call->room }}",
+            parentNode: document.getElementById("jitsi-container"),
             width: "100%",
             height: "100%",
+
             userInfo: {
                 displayName: "{{ auth()->user()->name }}"
+            },
+
+            configOverwrite: {
+                prejoinPageEnabled: false,
+                startWithAudioMuted: true,
+                startWithVideoMuted: false,
+                disableDeepLinking: true,
+                enableWelcomePage: false,
+                enableClosePage: false,
+                disableInviteFunctions: true,
+                p2p: {
+                    enabled: true
+                }
+            },
+
+            interfaceConfigOverwrite: {
+                FILM_STRIP_MAX_HEIGHT: 90,
+                SHOW_JITSI_WATERMARK: false,
+                SHOW_WATERMARK_FOR_GUESTS: false,
+                TOOLBAR_ALWAYS_VISIBLE: true,
+                HIDE_INVITE_MORE_HEADER: true,
+                DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+                DEFAULT_BACKGROUND: "#000000"
+            }
+        };
+
+        const api = new JitsiMeetExternalAPI(domain, options);
+
+        api.addEventListener("participantJoined", (participant) => {
+            if (participant.displayName === "{{ $call->mentor->name }}") {
+                api.executeCommand("pinParticipant", participant.id);
+                api.executeCommand("setTileView", false); // отключаем плитку
             }
         });
         // Save when user leaves

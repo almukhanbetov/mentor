@@ -3,16 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
     public function index()
     {
-        $courses = Course::latest()
-            ->take(6)
-            ->get();
+        $mentors = User::where('role', 'mentor')
+        ->where('is_online', true)
+        ->limit(6)
+        ->get();
 
-        return view('pages.index',compact('courses'));
+        $courses = Course::latest()->limit(6)->get();
+
+        return view('pages.index', compact('mentors', 'courses'));
     }
 }
