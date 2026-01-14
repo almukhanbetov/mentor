@@ -56,11 +56,11 @@ jobs:
           envs: VPS_PATH
           script: |
             set -e
-            echo "VPS_PATH=[$VPS_PATH]"
-            pwd
-            ls -la
+            echo "VPS_PATH=$VPS_PATH"
             cd $VPS_PATH
             pwd
             ls -la
+            echo "APP_BUILD=${{ github.sha }}" >> .env
             docker compose pull
             docker compose up -d --force-recreate
+            docker image prune -f
