@@ -44,8 +44,6 @@ jobs:
             APP_BUILD=${{ github.sha }}
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          VPS_PATH: ${{ vars.VPS_PATH }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -53,14 +51,11 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           command_timeout: 40m
           script_stop: true
-          envs: VPS_PATH
           script: |
             set -e
-            echo "VPS_PATH=$VPS_PATH"
-            cd $VPS_PATH
-            pwd
-            ls -la
+            cd ${{ secrets.VPS_PATH }}
             echo "APP_BUILD=${{ github.sha }}" >> .env
             docker compose pull
             docker compose up -d --force-recreate
+            # 🧹 очистка старых образов (безопасно)
             docker image prune -f
