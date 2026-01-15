@@ -7,7 +7,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
                 <h1 class="text-5xl font-bold leading-tight">
-                    Learn Programming & DevOps
+                    Learn Programming & DevOps+2
                 </h1>
                 <p class="mt-4 text-xl text-zinc-400">
                     Мы не учим. Мы доводим проекты до продакшна.
